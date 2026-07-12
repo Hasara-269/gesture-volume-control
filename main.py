@@ -74,6 +74,7 @@ MAX_DIST       = 200        # Maximum pinch distance (px) → 100 % volume
 
 EMA_ALPHA      = 0.3        # Exponential moving average smoothing factor
                             #   ↑ higher = more responsive, ↓ lower = smoother
+VOL_EMA_ALPHA  = 0.25       # Exponential moving average smoothing factor for volume
 
 DETECTION_CONF = 0.7        # MediaPipe minimum detection confidence
 TRACKING_CONF  = 0.7        # MediaPipe minimum tracking confidence
@@ -367,6 +368,8 @@ def main():
     prev_time   = time.time()
     fps         = 0.0
     smooth_dist = None          # EMA-smoothed distance (initialised on first frame)
+    smooth_vol_pct = None       # EMA-smoothed volume percentage
+    smooth_vol_db = None        # EMA-smoothed volume dB
     vol_pct     = 0.0           # current volume percentage
     frame_drop_count = 0        # consecutive dropped frames counter
     frame_index = 0             # monotonic frame counter for timestamp_ms
@@ -430,10 +433,19 @@ def main():
 
                 if PYCAW_AVAILABLE:
                     # Interpolate to dB range for perceptually smooth control
-                    vol_db = np.interp(clamped, [MIN_DIST, MAX_DIST], [vol_min, vol_max])
-                    set_volume(volume_iface, float(vol_db))
+                    target_vol_db = np.interp(clamped, [MIN_DIST, MAX_DIST], [vol_min, vol_max])
+                    if smooth_vol_db is None:
+                        smooth_vol_db = target_vol_db
+                    else:
+                        smooth_vol_db = VOL_EMA_ALPHA * target_vol_db + (1 - VOL_EMA_ALPHA) * smooth_vol_db
+                    set_volume(volume_iface, float(smooth_vol_db))
 
-                vol_pct = float(np.interp(clamped, [MIN_DIST, MAX_DIST], [0, 100]))
+                target_vol_pct = float(np.interp(clamped, [MIN_DIST, MAX_DIST], [0, 100]))
+                if smooth_vol_pct is None:
+                    smooth_vol_pct = target_vol_pct
+                else:
+                    smooth_vol_pct = VOL_EMA_ALPHA * target_vol_pct + (1 - VOL_EMA_ALPHA) * smooth_vol_pct
+                vol_pct = smooth_vol_pct
 
                 # ── PyAutoGUI fallback ──────
                 if not PYCAW_AVAILABLE and PYAUTOGUI_AVAILABLE:
