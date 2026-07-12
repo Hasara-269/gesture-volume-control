@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# MediaPipe model (auto-downloaded at runtime)
+hand_landmarker.task
