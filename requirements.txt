@@ -1,0 +1,23 @@
+# ──────────────────────────────────────────────
+# Gesture Volume Controller — Dependencies
+# ──────────────────────────────────────────────
+# Install with:  pip install -r requirements.txt
+# ──────────────────────────────────────────────
+
+# Core computer vision & image processing
+opencv-python>=4.8.0
+
+# Google MediaPipe hand tracking
+mediapipe>=0.10.0
+
+# Numerical operations (distance calc, interpolation)
+numpy>=1.24.0
+
+# Windows audio control via COM (primary volume backend)
+pycaw>=20230407
+
+# COM automation support required by PyCaw
+comtypes>=1.2.0
+
+# Cross-platform fallback for volume keys (optional)
+pyautogui>=0.9.54
