@@ -82,6 +82,8 @@ TRACKING_CONF  = 0.7        # MediaPipe minimum tracking confidence
 # Landmark indices (MediaPipe hand model — 21 landmarks)
 THUMB_TIP      = 4
 INDEX_TIP      = 8
+PINKY_MCP      = 17
+PINKY_TIP      = 20
 
 # Model file configuration
 MODEL_URL  = ("https://storage.googleapis.com/mediapipe-models/"
@@ -97,6 +99,9 @@ COLOR_RED      = (0, 0, 255)
 COLOR_WHITE    = (255, 255, 255)
 COLOR_BLACK    = (0, 0, 0)
 COLOR_DARK_GRAY = (40, 40, 40)
+COLOR_CRIMSON  = (60, 20, 220)     # Bright crimson (BGR) for LOCKED
+COLOR_NEON_GREEN = (57, 255, 20)   # Neon green (BGR) for ACTIVE
+COLOR_GRAY     = (150, 150, 150)   # Muted gray
 COLOR_BAR_BG   = (50, 50, 50)
 COLOR_BAR_FILL = (255, 178, 0)     # Warm amber fill
 COLOR_BAR_MUTE = (0, 100, 255)     # Orange-red when muted
@@ -254,7 +259,7 @@ def draw_volume_bar(frame, vol_pct, is_muted, is_maxed):
         cv2.line(frame, (BAR_X - 6, y), (BAR_X, y), COLOR_WHITE, 1)
 
 
-def draw_landmarks(frame, thumb, index, vol_pct, is_muted, is_maxed):
+def draw_landmarks(frame, thumb, index, vol_pct, is_muted, is_maxed, is_active):
     """
     Draw landmark circles, connecting line, and visual feedback.
 
@@ -268,9 +273,14 @@ def draw_landmarks(frame, thumb, index, vol_pct, is_muted, is_maxed):
     vol_pct : float
     is_muted : bool
     is_maxed : bool
+    is_active : bool
+        True if the system is actively tracking (pinky extended).
     """
-    # Connecting line — green at extremes, cyan otherwise
-    if is_muted or is_maxed:
+    # Connecting line — green at extremes, cyan otherwise, gray if locked
+    if not is_active:
+        line_color = COLOR_GRAY
+        line_thickness = 2
+    elif is_muted or is_maxed:
         line_color = COLOR_GREEN
         line_thickness = 3
     else:
@@ -313,6 +323,22 @@ def draw_fps(frame, fps):
         (10, 30),
         cv2.FONT_HERSHEY_SIMPLEX, 0.7, COLOR_GREEN, 2,
     )
+
+
+def draw_system_state(frame, is_active):
+    """Draw the gestural lock switch state overlay."""
+    if is_active:
+        cv2.circle(frame, (30, 65), 10, COLOR_NEON_GREEN, cv2.FILLED)
+        cv2.putText(
+            frame, "SYSTEM: ACTIVE", 
+            (50, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.7, COLOR_NEON_GREEN, 2
+        )
+    else:
+        cv2.circle(frame, (30, 65), 10, COLOR_CRIMSON, cv2.FILLED)
+        cv2.putText(
+            frame, "SYSTEM: LOCKED (VOLUME FROZEN)", 
+            (50, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.7, COLOR_CRIMSON, 2
+        )
 
 
 def draw_no_hand(frame):
@@ -414,53 +440,64 @@ def main():
                 # Extract thumb tip & index tip pixel coordinates
                 thumb_lm = hand_lm[THUMB_TIP]
                 index_lm = hand_lm[INDEX_TIP]
+                pinky_mcp_lm = hand_lm[PINKY_MCP]
+                pinky_tip_lm = hand_lm[PINKY_TIP]
 
                 tx, ty = int(thumb_lm.x * w), int(thumb_lm.y * h)
                 ix, iy = int(index_lm.x * w), int(index_lm.y * h)
+                px_mcp, py_mcp = int(pinky_mcp_lm.x * w), int(pinky_mcp_lm.y * h)
+                px_tip, py_tip = int(pinky_tip_lm.x * w), int(pinky_tip_lm.y * h)
+
+                # ── State Determination Logic ──────
+                is_active = py_tip < py_mcp
 
                 # ── Euclidean distance ──────
                 raw_dist = math.hypot(ix - tx, iy - ty)
 
-                # ── EMA smoothing ───────────
-                if smooth_dist is None:
-                    smooth_dist = raw_dist
-                else:
-                    smooth_dist = EMA_ALPHA * raw_dist + (1 - EMA_ALPHA) * smooth_dist
-
-                # ── Map to volume ───────────
-                # Clamp smoothed distance to [MIN_DIST, MAX_DIST]
-                clamped = np.clip(smooth_dist, MIN_DIST, MAX_DIST)
-
-                if PYCAW_AVAILABLE:
-                    # Interpolate to dB range for perceptually smooth control
-                    target_vol_db = np.interp(clamped, [MIN_DIST, MAX_DIST], [vol_min, vol_max])
-                    if smooth_vol_db is None:
-                        smooth_vol_db = target_vol_db
+                if is_active:
+                    # ── EMA smoothing ───────────
+                    if smooth_dist is None:
+                        smooth_dist = raw_dist
                     else:
-                        smooth_vol_db = VOL_EMA_ALPHA * target_vol_db + (1 - VOL_EMA_ALPHA) * smooth_vol_db
-                    set_volume(volume_iface, float(smooth_vol_db))
+                        smooth_dist = EMA_ALPHA * raw_dist + (1 - EMA_ALPHA) * smooth_dist
 
-                target_vol_pct = float(np.interp(clamped, [MIN_DIST, MAX_DIST], [0, 100]))
-                if smooth_vol_pct is None:
-                    smooth_vol_pct = target_vol_pct
-                else:
-                    smooth_vol_pct = VOL_EMA_ALPHA * target_vol_pct + (1 - VOL_EMA_ALPHA) * smooth_vol_pct
-                vol_pct = smooth_vol_pct
+                    # ── Map to volume ───────────
+                    # Clamp smoothed distance to [MIN_DIST, MAX_DIST]
+                    clamped = np.clip(smooth_dist, MIN_DIST, MAX_DIST)
 
-                # ── PyAutoGUI fallback ──────
-                if not PYCAW_AVAILABLE and PYAUTOGUI_AVAILABLE:
-                    target = int(vol_pct)
-                    diff = target - fallback_vol
-                    steps = abs(diff) // 2  # each key press ≈ 2 %
-                    key = "volumeup" if diff > 0 else "volumedown"
-                    for _ in range(min(steps, 5)):  # cap to avoid lag
-                        pyautogui.press(key)
-                    fallback_vol = target
+                    if PYCAW_AVAILABLE:
+                        # Interpolate to dB range for perceptually smooth control
+                        target_vol_db = np.interp(clamped, [MIN_DIST, MAX_DIST], [vol_min, vol_max])
+                        if smooth_vol_db is None:
+                            smooth_vol_db = target_vol_db
+                        else:
+                            smooth_vol_db = VOL_EMA_ALPHA * target_vol_db + (1 - VOL_EMA_ALPHA) * smooth_vol_db
+                        set_volume(volume_iface, float(smooth_vol_db))
+
+                    target_vol_pct = float(np.interp(clamped, [MIN_DIST, MAX_DIST], [0, 100]))
+                    if smooth_vol_pct is None:
+                        smooth_vol_pct = target_vol_pct
+                    else:
+                        smooth_vol_pct = VOL_EMA_ALPHA * target_vol_pct + (1 - VOL_EMA_ALPHA) * smooth_vol_pct
+                    vol_pct = smooth_vol_pct
+
+                    # ── PyAutoGUI fallback ──────
+                    if not PYCAW_AVAILABLE and PYAUTOGUI_AVAILABLE:
+                        target = int(vol_pct)
+                        diff = target - fallback_vol
+                        steps = abs(diff) // 2  # each key press ≈ 2 %
+                        key = "volumeup" if diff > 0 else "volumedown"
+                        for _ in range(min(steps, 5)):  # cap to avoid lag
+                            pyautogui.press(key)
+                        fallback_vol = target
 
                 # ── Draw landmarks & line ───
                 is_muted = vol_pct <= 0.5
                 is_maxed = vol_pct >= 99.5
-                draw_landmarks(frame, (tx, ty), (ix, iy), vol_pct, is_muted, is_maxed)
+                draw_landmarks(frame, (tx, ty), (ix, iy), vol_pct, is_muted, is_maxed, is_active)
+                
+                # ── Draw system state overlay ──
+                draw_system_state(frame, is_active)
             else:
                 draw_no_hand(frame)
 
