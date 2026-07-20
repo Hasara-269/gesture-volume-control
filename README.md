@@ -1,170 +1,99 @@
-# 🖐️ Gesture Volume Controller
+<div align="center">
 
-> A real-time computer vision application built with **Python**, **OpenCV**, and **MediaPipe** that tracks hand gestures via webcam and dynamically adjusts system audio levels using the **PyCaw** Windows audio API.
+# Gesture Volume Control
+**Precision Audio Management via Computer Vision**
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)
-![OpenCV](https://img.shields.io/badge/OpenCV-4.8%2B-5C3EE8?logo=opencv&logoColor=white)
-![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10%2B-00A98F)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white)
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.8+-red.svg?logo=opencv&logoColor=white)](https://opencv.org/)
+[![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10+-orange.svg?logo=google&logoColor=white)](https://developers.google.com/mediapipe)
+[![Pycaw](https://img.shields.io/badge/Pycaw-Audio-yellow.svg)](https://github.com/AndreMiras/pycaw)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
----
+A real-time, touchless volume controller that maps hand gestures directly to Windows system audio levels. Built on top of MediaPipe and Pycaw, it delivers buttery-smooth volume transitions by tracking precise finger distances and applying advanced signal smoothing to mitigate camera jitter.
 
-## ✨ Features
+</div>
 
-| Feature | Description |
-|---------|-------------|
-| 🖐️ **Real-time Hand Tracking** | MediaPipe Hands detects thumb tip & index finger tip with high confidence |
-| 🔊 **Smooth Volume Control** | Pinch distance mapped to system volume via PyCaw (no popup OSD) |
-| 📊 **Live Volume Bar** | Animated vertical bar overlay with tick marks and percentage readout |
-| 🎯 **EMA Smoothing** | Exponential moving average eliminates jitter for buttery-smooth control |
-| 🟢 **Visual Extremes Feedback** | Pulsing circle + green line when volume hits 0 % (mute) or 100 % (max) |
-| ⚡ **FPS Counter** | Live frames-per-second overlay to monitor performance |
-| 🔄 **Mirror View** | Selfie-style horizontal flip for natural interaction |
-| 🛡️ **Defensive Coding** | Graceful fallback to PyAutoGUI, frame-drop detection, clean shutdown |
+<br>
 
----
+## 🎮 Interactive Demo
 
-## 🏗️ Architecture
-
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
-│  Webcam Feed │────▶│   OpenCV     │────▶│  MediaPipe Hands  │
-│  640 × 480   │     │  Flip + BGR  │     │  Landmark 4 & 8   │
-└──────────────┘     └──────────────┘     └────────┬─────────┘
-                                                   │
-                                          Euclidean Distance
-                                                   │
-                                          ┌────────▼─────────┐
-                                          │   EMA Smoothing   │
-                                          │   (α = 0.3)       │
-                                          └────────┬─────────┘
-                                                   │
-                              ┌────────────────────┼────────────────────┐
-                              │                    │                    │
-                    ┌─────────▼────────┐ ┌────────▼────────┐ ┌───────▼────────┐
-                    │  np.interp → dB  │ │ np.interp → %   │ │  UI Overlay    │
-                    │  PyCaw COM API   │ │ Volume Bar + %   │ │  Landmarks     │
-                    └──────────────────┘ └─────────────────┘ └────────────────┘
-```
+<!-- PLACEHOLDER: Replace demo.png with an actual GIF/Screenshot of the gesture control in action -->
+<div align="center">
+  <img src="./demo.png" alt="Gesture Volume Control Demonstration" width="700" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+  <p><em>Demonstrating live pinch-to-volume adjustments and engagement toggling.</em></p>
+</div>
 
 ---
 
-## 📋 Prerequisites
+## 🏗️ Key Architectural Features
 
-- **Python 3.9+**
-- **Windows 10/11** (PyCaw requires the Windows Core Audio API)
-- A working **webcam** (built-in or USB)
-
----
-
-## 🚀 Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/Hasara-269/gesture-volume-control.git
-   cd gesture-volume-control
-   ```
-
-2. **Switch to the dev branch**
-
-   ```bash
-   git checkout dev
-   ```
-
-3. **Create a virtual environment** (recommended)
-
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate
-   ```
-
-4. **Install dependencies**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
+- **Precision Pinch Tracking:** Calculates the real-time Euclidean distance between Thumb (Landmark 4) and Index (Landmark 8) to establish a dynamic volume interpolation curve.
+- **Signal Smoothing:** Employs an Exponential Moving Average (EMA) filter on the output volume signal to eliminate frame-by-frame jitter and provide a premium, smooth audio adjustment experience.
+- **Gestural Lock Switch:** Incorporates an engagement toggle by continuously monitoring the Pinky tip (Landmark 20) relative to its MCP joint (Landmark 17), preventing accidental system volume modifications when not actively controlling.
+- **Background Windows Core Audio Integration:** Directly hooks into the Windows Core Audio API via Pycaw, executing volume changes natively and instantaneously without triggering disruptive OS popups.
 
 ---
 
-## ▶️ Usage
+## 🚀 Getting Started & Installation
+
+### Prerequisites
+- Python 3.8 or higher
+- Windows Operating System (Required for Pycaw integration)
+- A working webcam
+
+### Installation Steps
 
 ```bash
+# 1. Clone the repository
+git clone https://github.com/Hasara-269/gesture-volume-control.git
+cd gesture-volume-control
+
+# 2. Create a virtual environment
+python -m venv venv
+
+# 3. Activate the environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux (if testing UI without Pycaw):
+source venv/bin/activate
+
+# 4. Install dependencies
+pip install -r requirements.txt
+
+# 5. Launch the application
 python main.py
 ```
 
-| Action | Result |
-|--------|--------|
-| **Pinch thumb + index together** | Volume → 0 % (mute) |
-| **Spread thumb + index apart** | Volume → 100 % (max) |
-| **Press `q`** | Quit cleanly |
+---
+
+## ✋ Gesture Controls Guide
+
+| Action | Gesture | System Response |
+| :--- | :--- | :--- |
+| **Engage Control** | Raise pinky finger (Tip higher than MCP joint) | Unlocks the volume modification state. The visualizer will turn active. |
+| **Adjust Volume** | Pinch/Spread Thumb and Index fingers | Dynamically scales system volume relative to finger distance. |
+| **Lock Control** | Lower pinky finger (Close hand / fist) | Locks the volume modification state. Hand movements will no longer affect audio. |
+| **Exit App** | Press `q` on the keyboard | Closes the webcam feed and securely terminates the process. |
 
 ---
 
-## ⚙️ Configuration
+## 🧰 Tech Stack & Dependencies
 
-All tuneable constants are defined at the top of `main.py`:
-
-| Constant | Default | Description |
-|----------|---------|-------------|
-| `CAM_INDEX` | `0` | Webcam device index |
-| `CAM_WIDTH` | `640` | Capture width (px) |
-| `CAM_HEIGHT` | `480` | Capture height (px) |
-| `MIN_DIST` | `20` | Minimum pinch distance → 0 % volume |
-| `MAX_DIST` | `200` | Maximum pinch distance → 100 % volume |
-| `EMA_ALPHA` | `0.3` | Smoothing factor (higher = more responsive) |
-| `DETECTION_CONF` | `0.7` | MediaPipe detection confidence threshold |
-| `TRACKING_CONF` | `0.7` | MediaPipe tracking confidence threshold |
-
-### Distance Calibration
-
-The default `MIN_DIST=20` / `MAX_DIST=200` works well at **50–80 cm** from the webcam at 640×480. If you sit closer or further away, adjust these values:
-
-- **Closer to camera** → increase `MAX_DIST` (e.g., 250–300)
-- **Further from camera** → decrease `MAX_DIST` (e.g., 120–150)
+- **[OpenCV (`opencv-python`)](https://opencv.org/):** Core library for capturing webcam feeds and rendering the real-time feedback UI.
+- **[MediaPipe (`mediapipe`)](https://developers.google.com/mediapipe):** High-performance Google ML framework utilized for complex 21-point hand landmark detection.
+- **[NumPy (`numpy`)](https://numpy.org/):** Handles mathematical interpolations and array-based Euclidean distance calculations.
+- **[Pycaw (`pycaw`)](https://github.com/AndreMiras/pycaw) & `comtypes`:** Powers the native integration with the Windows Core Audio API.
 
 ---
 
-## 🗂️ Project Structure
+## 📂 Project Structure
 
-```
+```text
 gesture-volume-control/
-├── main.py              # Complete application (entry point)
-├── requirements.txt     # Python dependencies
-├── README.md            # This file
-├── LICENSE              # MIT License
-└── .gitignore           # Python gitignore
+│
+├── .gitignore          # Git exclusion rules
+├── demo.png            # Placeholder for the application demonstration
+├── main.py             # Core application entry point and logic
+├── README.md           # Project documentation (You are here)
+└── requirements.txt    # Frozen dependency specifications
 ```
-
----
-
-## 🔧 Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| `Cannot open webcam at index 0` | Check camera connection. Try `CAM_INDEX = 1` for external cameras. |
-| `Neither pycaw nor pyautogui is installed` | Run `pip install pycaw comtypes pyautogui` |
-| PyCaw import error on non-Windows | PyCaw is Windows-only. On macOS/Linux, the app falls back to PyAutoGUI volume keys (less smooth). |
-| Jittery volume changes | Lower `EMA_ALPHA` (e.g., `0.15`) for heavier smoothing. |
-| Low FPS | Reduce `CAM_WIDTH`/`CAM_HEIGHT` or lower MediaPipe confidence thresholds. |
-| Hand not detected | Ensure good lighting. Face your palm toward the camera. |
-
----
-
-## 🛠️ Tech Stack
-
-| Library | Purpose |
-|---------|---------|
-| [OpenCV](https://opencv.org/) | Webcam capture, image processing, UI rendering |
-| [MediaPipe](https://mediapipe.dev/) | Real-time hand landmark detection |
-| [NumPy](https://numpy.org/) | Numerical interpolation and array ops |
-| [PyCaw](https://github.com/AndreMiras/pycaw) | Windows Core Audio API (COM) volume control |
-| [comtypes](https://github.com/enthought/comtypes) | COM interface support for PyCaw |
-| [PyAutoGUI](https://pyautogui.readthedocs.io/) | Cross-platform fallback via volume keys |
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
