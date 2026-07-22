@@ -1,99 +1,54 @@
 <div align="center">
 
-# Gesture Volume Control
-**Precision Audio Management via Computer Vision**
+<!-- ANIMATED / DYNAMIC HEADER BANNER -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=auto&height=220&section=header&text=Gesture%20Volume%20Control&fontSize=50&fontAlignY=35&animation=twinkling&desc=Precision%20Audio%20Management%20via%20Computer%20Vision&descSize=18&descAlignY=60" width="100%" alt="Header Banner" />
 
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-4.8+-red.svg?logo=opencv&logoColor=white)](https://opencv.org/)
-[![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10+-orange.svg?logo=google&logoColor=white)](https://developers.google.com/mediapipe)
-[![Pycaw](https://img.shields.io/badge/Pycaw-Audio-yellow.svg)](https://github.com/AndreMiras/pycaw)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+<br/>
 
-A real-time, touchless volume controller that maps hand gestures directly to Windows system audio levels. Built on top of MediaPipe and Pycaw, it delivers buttery-smooth volume transitions by tracking precise finger distances and applying advanced signal smoothing to mitigate camera jitter.
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.8+-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
+[![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10+-00C7B7?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/mediapipe)
+[![Pycaw](https://img.shields.io/badge/Pycaw-Windows_Audio-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/AndreMiras/pycaw)
+[![License: MIT](https://img.shields.io/badge/License-MIT-43A047?style=for-the-badge&logo=open-source-initiative&logoColor=white)](https://opensource.org/licenses/MIT)
+
+<br/>
+
+A real-time, touchless volume controller that maps hand gestures directly to Windows system audio levels. Built on top of **MediaPipe** and **Pycaw**, it delivers buttery-smooth volume transitions by tracking precise finger distances and applying advanced signal smoothing to mitigate camera jitter.
 
 </div>
 
-<br>
+---
 
 ## 🎮 Interactive Demo
 
-<!-- PLACEHOLDER: Replace demo.png with an actual GIF/Screenshot of the gesture control in action -->
 <div align="center">
-  <img src="./demo.png" alt="Gesture Volume Control Demonstration" width="700" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-  <p><em>Demonstrating live pinch-to-volume adjustments and engagement toggling.</em></p>
+  <!-- Replace demo.gif with your recorded GIF or video clip of the app in action -->
+  <img src="./demo.gif" alt="Gesture Volume Control Demonstration" width="750" style="border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+  <p><sub><em>Live pinch-to-volume adjustments featuring engagement toggling and real-time visual feedback.</em></sub></p>
 </div>
 
 ---
 
 ## 🏗️ Key Architectural Features
 
-- **Precision Pinch Tracking:** Calculates the real-time Euclidean distance between Thumb (Landmark 4) and Index (Landmark 8) to establish a dynamic volume interpolation curve.
-- **Signal Smoothing:** Employs an Exponential Moving Average (EMA) filter on the output volume signal to eliminate frame-by-frame jitter and provide a premium, smooth audio adjustment experience.
-- **Gestural Lock Switch:** Incorporates an engagement toggle by continuously monitoring the Pinky tip (Landmark 20) relative to its MCP joint (Landmark 17), preventing accidental system volume modifications when not actively controlling.
-- **Background Windows Core Audio Integration:** Directly hooks into the Windows Core Audio API via Pycaw, executing volume changes natively and instantaneously without triggering disruptive OS popups.
-
----
-
-## 🚀 Getting Started & Installation
-
-### Prerequisites
-- Python 3.8 or higher
-- Windows Operating System (Required for Pycaw integration)
-- A working webcam
-
-### Installation Steps
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/Hasara-269/gesture-volume-control.git
-cd gesture-volume-control
-
-# 2. Create a virtual environment
-python -m venv venv
-
-# 3. Activate the environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux (if testing UI without Pycaw):
-source venv/bin/activate
-
-# 4. Install dependencies
-pip install -r requirements.txt
-
-# 5. Launch the application
-python main.py
-```
+| Feature | Description |
+| :--- | :--- |
+| 🎯 **Precision Pinch Tracking** | Calculates the real-time Euclidean distance between **Thumb (Landmark 4)** and **Index (Landmark 8)** to establish a dynamic volume interpolation curve. |
+| 📈 **Signal Smoothing Filter** | Employs an **Exponential Moving Average (EMA)** filter on the output signal to eliminate frame-by-frame jitter, offering a premium, fluid audio adjustment experience. |
+| 🔒 **Gestural Lock Switch** | Features a dedicated engagement toggle by monitoring the **Pinky tip (Landmark 20)** relative to its **MCP joint (Landmark 17)**, preventing accidental volume triggers. |
+| ⚡ **Core Audio API Integration** | Direct low-latency hooks into the Windows Core Audio API via **Pycaw**, updating system levels natively without triggering intrusive OS overlays. |
 
 ---
 
 ## ✋ Gesture Controls Guide
 
-| Action | Gesture | System Response |
-| :--- | :--- | :--- |
-| **Engage Control** | Raise pinky finger (Tip higher than MCP joint) | Unlocks the volume modification state. The visualizer will turn active. |
-| **Adjust Volume** | Pinch/Spread Thumb and Index fingers | Dynamically scales system volume relative to finger distance. |
-| **Lock Control** | Lower pinky finger (Close hand / fist) | Locks the volume modification state. Hand movements will no longer affect audio. |
-| **Exit App** | Press `q` on the keyboard | Closes the webcam feed and securely terminates the process. |
-
----
-
-## 🧰 Tech Stack & Dependencies
-
-- **[OpenCV (`opencv-python`)](https://opencv.org/):** Core library for capturing webcam feeds and rendering the real-time feedback UI.
-- **[MediaPipe (`mediapipe`)](https://developers.google.com/mediapipe):** High-performance Google ML framework utilized for complex 21-point hand landmark detection.
-- **[NumPy (`numpy`)](https://numpy.org/):** Handles mathematical interpolations and array-based Euclidean distance calculations.
-- **[Pycaw (`pycaw`)](https://github.com/AndreMiras/pycaw) & `comtypes`:** Powers the native integration with the Windows Core Audio API.
-
----
-
-## 📂 Project Structure
+> **Note:** Raise your pinky to unlock volume modification. Lowering your pinky locks the volume at its current setting.
 
 ```text
-gesture-volume-control/
-│
-├── .gitignore          # Git exclusion rules
-├── demo.png            # Placeholder for the application demonstration
-├── main.py             # Core application entry point and logic
-├── README.md           # Project documentation (You are here)
-└── requirements.txt    # Frozen dependency specifications
-```
+    [UNLOCKED STATE]                 [VOLUME PINCH]                 [LOCKED STATE]
+       
+      🖐️ Pinky Raised               🤌 Pinch / Spread             ✊ Pinky Lowered
+   (Tip higher than MCP)           (Thumb ↔ Index Distance)          (Hand Closed)
+             │                                 │                            │
+             ▼                                 ▼                            ▼
+   Activates Volume Switch           Scales Audio 0% ➔ 100%       Locks Current Volume Level
