@@ -1,19 +1,21 @@
 <div align="center">
 
-<!-- ANIMATED / DYNAMIC HEADER BANNER -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=auto&height=220&section=header&text=Gesture%20Volume%20Control&fontSize=50&fontAlignY=35&animation=twinkling&desc=Precision%20Audio%20Management%20via%20Computer%20Vision&descSize=18&descAlignY=60" width="100%" alt="Header Banner" />
+<!-- ANIMATED HEADER BANNER -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,100:1e1b4b&height=240&section=header&text=Gesture%20Volume%20Control&fontSize=48&fontAlignY=36&animation=twinkling&desc=Precision%20Audio%20Management%20via%20Computer%20Vision&descSize=18&descAlignY=62&stroke=6366f1&strokeWidth=1" width="100%" alt="Gesture Volume Control Header Banner" />
 
 <br/>
 
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-4.8+-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
-[![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10+-00C7B7?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/mediapipe)
-[![Pycaw](https://img.shields.io/badge/Pycaw-Windows_Audio-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/AndreMiras/pycaw)
-[![License: MIT](https://img.shields.io/badge/License-MIT-43A047?style=for-the-badge&logo=open-source-initiative&logoColor=white)](https://opensource.org/licenses/MIT)
+<!-- BADGES -->
+<a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.8+"/></a>
+<a href="https://opencv.org/"><img src="https://img.shields.io/badge/OpenCV-4.8%2B-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" alt="OpenCV"/></a>
+<a href="https://developers.google.com/mediapipe"><img src="https://img.shields.io/badge/MediaPipe-0.10%2B-00C7B7?style=for-the-badge&logo=google&logoColor=white" alt="MediaPipe"/></a>
+<a href="https://github.com/AndreMiras/pycaw"><img src="https://img.shields.io/badge/Pycaw-Audio_API-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Pycaw"/></a>
+<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-43A047?style=for-the-badge&logo=open-source-initiative&logoColor=white" alt="License MIT"/></a>
 
-<br/>
+<br/><br/>
 
-A real-time, touchless volume controller that maps hand gestures directly to Windows system audio levels. Built on top of **MediaPipe** and **Pycaw**, it delivers buttery-smooth volume transitions by tracking precise finger distances and applying advanced signal smoothing to mitigate camera jitter.
+> **A touchless, real-time volume controller mapping computer vision hand gestures directly to Windows system audio.**  
+> Built with MediaPipe and Pycaw, featuring exponential signal smoothing to eliminate camera jitter and an integrated gestural lock switch.
 
 </div>
 
@@ -22,33 +24,56 @@ A real-time, touchless volume controller that maps hand gestures directly to Win
 ## 🎮 Interactive Demo
 
 <div align="center">
-  <!-- Replace demo.gif with your recorded GIF or video clip of the app in action -->
-  <img src="./demo.gif" alt="Gesture Volume Control Demonstration" width="750" style="border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
-  <p><sub><em>Live pinch-to-volume adjustments featuring engagement toggling and real-time visual feedback.</em></sub></p>
+
+<!-- Replace demo.gif with your actual recorded GIF/video asset -->
+<img src="./demo.gif" alt="Gesture Volume Control Demonstration" width="80%" style="border-radius: 12px; border: 1px solid #30363d; box-shadow: 0 12px 32px rgba(0,0,0,0.35);">
+
+<p align="center">
+  <sub><em>Demonstrating live pinch-to-volume adjustments, real-time status HUD, and pinky engagement toggling.</em></sub>
+</p>
+
 </div>
 
 ---
 
-## 🏗️ Key Architectural Features
+## ⚡ Technical Highlights
 
-| Feature | Description |
-| :--- | :--- |
-| 🎯 **Precision Pinch Tracking** | Calculates the real-time Euclidean distance between **Thumb (Landmark 4)** and **Index (Landmark 8)** to establish a dynamic volume interpolation curve. |
-| 📈 **Signal Smoothing Filter** | Employs an **Exponential Moving Average (EMA)** filter on the output signal to eliminate frame-by-frame jitter, offering a premium, fluid audio adjustment experience. |
-| 🔒 **Gestural Lock Switch** | Features a dedicated engagement toggle by monitoring the **Pinky tip (Landmark 20)** relative to its **MCP joint (Landmark 17)**, preventing accidental volume triggers. |
-| ⚡ **Core Audio API Integration** | Direct low-latency hooks into the Windows Core Audio API via **Pycaw**, updating system levels natively without triggering intrusive OS overlays. |
+<table>
+  <tr>
+    <td width="50%">
+      <h3>🎯 Precision Pinch Tracking</h3>
+      <p>Computes the continuous 2D/3D Euclidean distance between <code>Thumb (Landmark 4)</code> and <code>Index (Landmark 8)</code>, mapping physical spatial gap directly to normalized audio levels (0% to 100%).</p>
+    </td>
+    <td width="50%">
+      <h3>📈 Signal Smoothing (EMA)</h3>
+      <p>Applies an <strong>Exponential Moving Average (EMA)</strong> filter to the calculated output signal, filtering out frame-to-frame webcam noise and hand tremors for butter-smooth adjustments.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🔒 Gestural Lock Switch</h3>
+      <p>Continuously monitors <code>Pinky tip (Landmark 20)</code> against its <code>MCP joint (Landmark 17)</code>. The control loop stays locked until deliberately engaged, preventing accidental volume triggers.</p>
+    </td>
+    <td width="50%">
+      <h3>🔊 Native Audio Integration</h3>
+      <p>Direct low-latency hooks into the <strong>Windows Core Audio API</strong> via <code>Pycaw</code> and <code>comtypes</code>. Adjusts master audio natively in the background without disruptive OS popups.</p>
+    </td>
+  </tr>
+</table>
 
 ---
 
 ## ✋ Gesture Controls Guide
 
-> **Note:** Raise your pinky to unlock volume modification. Lowering your pinky locks the volume at its current setting.
-
 ```text
-    [UNLOCKED STATE]                 [VOLUME PINCH]                 [LOCKED STATE]
-       
-      🖐️ Pinky Raised               🤌 Pinch / Spread             ✊ Pinky Lowered
-   (Tip higher than MCP)           (Thumb ↔ Index Distance)          (Hand Closed)
-             │                                 │                            │
-             ▼                                 ▼                            ▼
-   Activates Volume Switch           Scales Audio 0% ➔ 100%       Locks Current Volume Level
+               ┌─────────────────────────────────────────────────────────┐
+               │                  CONTROL STATE PIPELINE                 │
+               └─────────────────────────────────────────────────────────┘
+
+     [UNLOCKED STATE]                  [VOLUME PINCH]                  [LOCKED STATE]
+        
+       🖐️ Pinky Raised                🤌 Pinch / Spread              ✊ Pinky Lowered
+    (Tip higher than MCP)            (Thumb ↔ Index Distance)           (Hand Closed)
+              │                                 │                             │
+              ▼                                 ▼                             ▼
+    Activates Volume Switch            Scales Audio 0% ➔ 100%       Locks Current Volume Level
